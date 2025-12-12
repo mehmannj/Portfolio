@@ -1,0 +1,36 @@
+.easter-egg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.easter-egg-content {
+  background: var(--gradient-3);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 50px rgba(0, 245, 255, 0.5);
+  border: 2px solid var(--primary);
+}
+
+.easter-egg-content h2 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2rem;
+  color: var(--dark);
+  margin-bottom: 15px;
+}
+
+.easter-egg-content p {
+  color: var(--dark);
+  font-size: 1.1rem;
+  margin: 10px 0;
+}
+
+.easter-egg-subtitle {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+

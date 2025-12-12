@@ -1,0 +1,85 @@
+.logo-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 2rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.logo-brackets {
+  color: var(--primary);
+  font-size: 1.2em;
+  filter: drop-shadow(0 0 10px var(--primary));
+}
+
+.logo-letters {
+  display: inline-flex;
+  gap: 2px;
+  font-size: 1.5em;
+  position: relative;
+  color: var(--primary);
+  background: linear-gradient(135deg, #00f5ff 0%, #7b2cbf 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 5px rgba(0, 245, 255, 0.5));
+}
+
+.logo-m1,
+.logo-m2 {
+  display: inline-block;
+}
+
+.logo-slash {
+  color: var(--primary);
+  margin: 0 5px;
+  font-size: 1.2em;
+  filter: drop-shadow(0 0 10px var(--primary));
+}
+
+.logo-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+  opacity: 0.3;
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Light Mode Styles */
+body.light-mode .logo-brackets {
+  color: #0066cc;
+  filter: drop-shadow(0 0 8px rgba(0, 102, 204, 0.4));
+}
+
+body.light-mode .logo-letters {
+  background: linear-gradient(135deg, #0066cc 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 5px rgba(0, 102, 204, 0.3));
+}
+
+body.light-mode .logo-slash {
+  color: #0066cc;
+  filter: drop-shadow(0 0 8px rgba(0, 102, 204, 0.4));
+}
+
+body.light-mode .logo-glow {
+  background: radial-gradient(circle, rgba(0, 102, 204, 0.2) 0%, transparent 70%);
+}
+
+@media (max-width: 768px) {
+  .logo-container {
+    font-size: 1.5rem;
+  }
+}
+

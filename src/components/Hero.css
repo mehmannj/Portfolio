@@ -1,0 +1,334 @@
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding-top: 120px;
+  margin-top: 0;
+}
+
+.hero-container {
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-content {
+  text-align: center;
+  position: relative;
+}
+
+.hero-avatar {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 30px;
+}
+
+.hero-avatar img {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 4px solid var(--primary);
+  object-fit: cover;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 0 40px rgba(0, 245, 255, 0.5);
+}
+
+.avatar-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: var(--gradient-3);
+  opacity: 0.3;
+  filter: blur(20px);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.status-badge {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 245, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.hero-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 4rem;
+  font-weight: 900;
+  margin-bottom: 20px;
+  background: var(--gradient-3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.title-prefix {
+  color: var(--text-secondary);
+}
+
+.title-text {
+  color: var(--primary);
+  font-weight: 700;
+  font-family: 'Orbitron', sans-serif;
+}
+
+.cursor-blink {
+  color: var(--primary);
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto 40px;
+  line-height: 1.8;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 15px 40px;
+  border-radius: 50px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-primary {
+  background: var(--gradient-3);
+  color: var(--dark);
+  box-shadow: 0 4px 20px rgba(0, 245, 255, 0.4);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 30px rgba(0, 245, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn-secondary:hover {
+  background: var(--primary);
+  color: var(--dark);
+  box-shadow: 0 4px 20px rgba(0, 245, 255, 0.4);
+}
+
+.hero-socials {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.hero-socials a {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(0, 245, 255, 0.1);
+  border: 2px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 1.5rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.hero-socials a:hover {
+  background: var(--primary);
+  color: var(--dark);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+}
+
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: float 20s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: var(--gradient-3);
+  top: -200px;
+  left: -200px;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 300px;
+  height: 300px;
+  background: var(--gradient-2);
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 5s;
+}
+
+.orb-3 {
+  width: 250px;
+  height: 250px;
+  background: var(--gradient-4);
+  top: 50%;
+  right: 10%;
+  animation-delay: 10s;
+}
+
+/* Light Mode Styles */
+body.light-mode .hero {
+  background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 50%, #faf5ff 100%);
+}
+
+body.light-mode .hero-name {
+  background: linear-gradient(135deg, #0066cc 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.light-mode .title-text {
+  color: #0066cc;
+}
+
+body.light-mode .hero-description {
+  color: #4b5563;
+}
+
+body.light-mode .btn-primary {
+  background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 102, 204, 0.3);
+}
+
+body.light-mode .btn-secondary {
+  border: 2px solid #0066cc;
+  color: #0066cc;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+body.light-mode .btn-secondary:hover {
+  background: #0066cc;
+  color: #ffffff;
+}
+
+body.light-mode .hero-socials a {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #0066cc;
+  color: #0066cc;
+  box-shadow: 0 2px 10px rgba(0, 102, 204, 0.1);
+}
+
+body.light-mode .hero-socials a:hover {
+  background: #0066cc;
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 102, 204, 0.3);
+}
+
+body.light-mode .gradient-orb {
+  opacity: 0.2;
+}
+
+@media (max-width: 768px) {
+  .hero-name {
+    font-size: 2.5rem;
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+    min-height: 50px;
+  }
+
+  .hero-description {
+    font-size: 1rem;
+  }
+
+  .hero-avatar img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .avatar-glow {
+    width: 170px;
+    height: 170px;
+  }
+
+  .btn {
+    padding: 12px 30px;
+    font-size: 0.9rem;
+  }
+}
+
