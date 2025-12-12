@@ -6,12 +6,8 @@ on:
       - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,17 +23,9 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Upload artifact for deployment
-        uses: actions/upload-pages-artifact@v1
+      - name: Deploy to GitHub Pages (gh-pages branch)
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: ./dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+          branch: gh-pages
+          folder: ./dist
+          clean: true
