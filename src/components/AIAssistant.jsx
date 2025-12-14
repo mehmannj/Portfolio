@@ -347,7 +347,7 @@ Resume: ${RESUME_URL}`
   const quickActions = [
     { icon: <FaCode />, text: 'Skills', prompt: "What are Mann's skills and tech stack?" },
     { icon: <FaRocket />, text: 'Projects', prompt: "Give a detailed overview of Mann's projects with tech used." },
-    { icon: <FaLightbulb />, text: 'Experience', prompt: "Summarize Mann's work experience and key achievements." },
+    { icon: <FaLightbulb />, text: 'Exp', prompt: "Summarize Mann's work experience and key achievements." },
     { icon: <FaRocket />, text: 'Why Hire', prompt: "Why should we hire Mann Mehta?" }
   ]
 
