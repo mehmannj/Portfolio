@@ -344,25 +344,7 @@ Resume: ${RESUME_URL}`
     }
   }
 
-  const quickActions = [
-    { icon: <FaCode />, text: 'Skills', prompt: "What are Mann's skills and tech stack?" },
-    { icon: <FaRocket />, text: 'Projects', prompt: "Give a detailed overview of Mann's projects with tech used." },
-    { icon: <FaLightbulb />, text: 'Experience', prompt: "Summarize Mann's work experience and key achievements.<<<<<<< HEAD
-=======
-  const getFallbackResponse = (userInput) => {
-    const lowerInput = userInput.toLowerCase()
-
-    if (lowerInput.includes('skill')) {
-      return "Mann is skilled in: Java, JavaScript, TypeScript, Python, C#, React, Angular, Spring Boot, MySQL, MongoDB, Git, Docker, AWS, and more! He's a full-stack developer with expertise in both frontend and backend technologies."
-    } else if (lowerInput.includes('project')) {
-      return "Mann has built several impressive projects:\n1. InstiManage - Smart Campus Management Platform (React + Spring Boot)\n2. CampusConnect - iOS Campus Map App\n3. Smart Campus Assistant - Android App\n4. C# Automation Tools\n5. Educational games and more!"
-    } else if (lowerInput.includes('experience') || lowerInput.includes('work')) {
-      return "Mann has 1+ year of professional experience:\n- Software Developer at Llamachant Technologies\n- Full-Stack Developer Intern at Samskrita Bharati\n- Jr. Enforcement Officer at Sheridan College\nHe's also pursuing Computer Systems Technology with a 3.70 GPA!"
-    } else if (lowerInput.includes('automation') || lowerInput.includes('automate')) {
-      return "Mann specializes in automation! He's built:\n- Virtual printer systems\n- Automation pipelines using microservices\n- Browser automation tools\n- Email processing automation\n- Workflow automation systems"
-    } else if (lowerInput.includes('contact') || lowerInput.includes('email') || lowerInput.includes('github') || lowerInput.includes('linkedin')) {
-      return "You can reach Mann at:\n- Email: mehtamann16@gmail.com\n- Location: Brampton, ON\n- GitHub: https://github.com/mehmannj\n- LinkedIn: https://www.linkedin.com/in/mann-mehta-17b819252"
-    } else if (lowerInput.includes('hello') || lowerInput.includes('hi') || lowerInput.includes('hey')) {
+des('hey')) {
       return greetings[Math.floor(Math.random() * greetings.length)]
     }
 
