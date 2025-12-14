@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
-import { useRef } from 'react'
 import emailjs from 'emailjs-com'
 import { FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
 import './Contact.css'
@@ -50,20 +49,34 @@ const Contact = () => {
     try {
       // send using configured service/template/public key
       // include `to_email` so templates that accept a recipient will deliver to the intended inbox
-      await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-        from_name: formData.name,
-        from_email: formData.email,
-        message: formData.message,
-        to_name: 'Mann Mehta',
-        to_email: 'mannmehta003@gmail.com',
-        reply_to: formData.email
-      })
+      if (!SERVICE_ID || !TEMPLATE_ID || !PUBLIC_KEY) {
+        throw new Error('EmailJS is not configured (service/template/public key missing).')
+      }
+
+      await emailjs.send(
+        SERVICE_ID,
+        TEMPLATE_ID,
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          message: formData.message,
+          to_name: 'Mann Mehta',
+          to_email: 'mannmehta003@gmail.com',
+          reply_to: formData.email
+        },
+        PUBLIC_KEY
+      )
 
       setSubmitStatus('success')
       setFormData({ name: '', email: '', message: '' })
     } catch (error) {
+      let errText = error?.text || error?.message || 'Unknown EmailJS error'
+      // Make the common Gmail token error more readable for the user
+      if (typeof errText === 'string' && errText.toLowerCase().includes('gmail_api: invalid grant')) {
+        errText = 'Email service connection expired. Please reconnect your Gmail account in EmailJS and try again.'
+      }
       console.error('EmailJS error:', error)
-      setSubmitStatus('error')
+      setSubmitStatus(errText)
     } finally {
       setIsSubmitting(false)
       setTimeout(() => setSubmitStatus(null), 5000)
@@ -185,13 +198,13 @@ const Contact = () => {
               </motion.div>
             )}
 
-            {submitStatus === 'error' && (
+            {submitStatus && submitStatus !== 'success' && (
               <motion.div
                 className="form-message error"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                Oops! Something went wrong. Please try again later.
+                Oops! Something went wrong. {typeof submitStatus === 'string' ? submitStatus : 'Please try again later.'}
               </motion.div>
             )}
           </motion.form>
@@ -202,4 +215,3 @@ const Contact = () => {
 }
 
 export default Contact
-
