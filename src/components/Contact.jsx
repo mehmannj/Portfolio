@@ -17,6 +17,20 @@ const Contact = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState(null)
 
+  // Read EmailJS config from environment. Set these in your Netlify/GitHub Actions env or in .env.local
+  const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE || 'service_ypjbvke'
+  const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE || 'template_fw3r6ip'
+  const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'IQujbyKGZzEAZUJko'
+
+  // Initialize EmailJS
+  if (typeof emailjs.init === 'function' && PUBLIC_KEY) {
+    try {
+      emailjs.init(PUBLIC_KEY)
+    } catch (e) {
+      // ignore init errors during SSR or if already initialized
+    }
+  }
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -30,18 +44,16 @@ const Contact = () => {
     setSubmitStatus(null)
 
     try {
-      await emailjs.send(
-        'service_ypjbvke',
-        'template_fw3r6ip',
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          message: formData.message,
-          to_name: 'Mann Mehta',
-          reply_to: formData.email
-        },
-        'IQujbyKGZzEAZUJko'
-      )
+      // send using configured service/template/public key
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+        from_name: formData.name,
+        from_email: formData.email,
+        message: formData.message,
+        to_name: 'Mann Mehta',
+        // If your EmailJS template is configured to use a fixed recipient, they will receive this message.
+        // Alternatively, you can configure the template to accept `to_email` and set it here to `mannmehta003@gmail.com`.
+        reply_to: formData.email
+      })
 
       setSubmitStatus('success')
       setFormData({ name: '', email: '', message: '' })
@@ -86,7 +98,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h4>Email</h4>
-                  <a href="mailto:mehtamann16@gmail.com">mehtamann16@gmail.com</a>
+                  <a href="mailto:mannmehta003@gmail.com">mannmehta003@gmail.com</a>
                 </div>
               </div>
 
