@@ -103,7 +103,8 @@ exports.handler = async function (event, context) {
       // No available provider; try resume fallback for resume queries
       try {
         const promptText = (prompt || '').toLowerCase()
-        const resumeUrl = process.env.RESUME_URL || '/resume.pdf'
+        // Serve the actual resume in /public
+        const resumeUrl = process.env.RESUME_URL || '/MannMehtaResume.pdf'
         if (/resume|cv|curriculum vitae|download my resume/.test(promptText)) {
           output = `You can download the resume here: ${resumeUrl}`
         }
