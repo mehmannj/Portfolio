@@ -44,7 +44,7 @@ const Hero = () => {
           >
             <div className="avatar-glow"></div>
             <motion.img 
-              src="/hero.jpeg" 
+              src={`${import.meta.env.BASE_URL}hero.jpeg`} 
               alt="Mann Mehta"
               whileHover={{ filter: 'brightness(1.2)' }}
               transition={{ duration: 0.3 }}
