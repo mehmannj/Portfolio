@@ -2,10 +2,33 @@ exports.handler = async function (event, context) {
   try {
     let GoogleGenAI
     try {
-      // Attempt to require the server SDK. If it's not installed, return a helpful error.
+      // Attempt to require the server SDK. If it's not installed, we'll
+      // fall back to light-weight canned responses for public information
+      // such as the resume link instead of failing entirely.
       GoogleGenAI = require('@google/genai').GoogleGenAI
     } catch (modErr) {
       console.error('Missing @google/genai module:', modErr)
+
+      // If the request asks about the resume, provide a public resume link
+      // from the environment or a default relative path.
+      try {
+        if (event.httpMethod === 'POST') {
+          const bodyText = event.body || '{}'
+          const parsed = JSON.parse(bodyText)
+          const promptText = (parsed.prompt || '').toLowerCase()
+          const resumeUrl = process.env.RESUME_URL || '/resume.pdf'
+
+          if (/resume|cv|curriculum vitae|download my resume/.test(promptText)) {
+            return {
+              statusCode: 200,
+              body: JSON.stringify({ output: `You can download the resume here: ${resumeUrl}` })
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Fallback resume handler error:', e)
+      }
+
       return {
         statusCode: 500,
         body: JSON.stringify({ error: "Server error: '@google/genai' module not found. Run 'npm install @google/genai' and redeploy." })

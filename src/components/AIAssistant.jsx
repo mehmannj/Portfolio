@@ -120,6 +120,12 @@ IMPORTANT INSTRUCTIONS:
 - Keep responses concise but informative
 - When asked about "github", "git", "repositories", or "code", always include the GitHub link`
 
+  // Public resume link (ensure `public/resume.pdf` exists or set BASE URL accordingly)
+  const RESUME_URL = `${import.meta.env.BASE_URL || '/'}resume.pdf`
+
+  const systemContextPrefix = `You are an AI assistant for Mann Mehta's portfolio website. Mann is a Full Stack Developer with 1+ year of professional experience and 5 years of education and training.`
+  const systemContext = `${systemContextPrefix}\nResume link: ${RESUME_URL}\n\n` + `COMPREHENSIVE INFORMATION ABOUT MANN MEHTA:`
+
   const greetings = [
     "👋 Hey! I'm your AI assistant powered by Gemini. Ask me about Mann's skills, projects, or experience!",
     "🚀 Want to know about automation? API integration? Full-stack development? Just ask!",
@@ -218,7 +224,7 @@ IMPORTANT INSTRUCTIONS:
       return greetings[Math.floor(Math.random() * greetings.length)]
     }
     
-    return "I can help you with information about Mann's skills, projects, experience, automation expertise, or contact details. Try asking about any of these topics!"
+    return `I can help you with information about Mann's skills, projects, experience, automation expertise, or contact details. You can download the resume here: ${RESUME_URL}`
   }
 
   const quickActions = [
