@@ -14,8 +14,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// Use a dynamic `base` so the same repo can be deployed to GitHub Pages (project site)
+// and to Netlify (root site) without editing the config each time.
+// Netlify sets the `NETLIFY` env var during builds, so we switch to '/' there.
+const isNetlify = typeof process !== 'undefined' && !!process.env.NETLIFY
+const base = isNetlify ? '/' : '/Portfolio/'
+
 export default defineConfig({
-  base: '/Portfolio/',
+  base,
   plugins: [react()],
 })
 
