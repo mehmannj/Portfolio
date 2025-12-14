@@ -1,119 +1,122 @@
-import { getStore } from '@netlify/blobs'
-
-export const handler = async (event) => {
+exports.handler = async function (event, context) {
   try {
-    // Allow only POST
+    let GoogleGenAI
+    let googleAvailable = false
+    try {
+      // Attempt to require the Gemini SDK. If it's available we'll use it.
+      GoogleGenAI = require('@google/genai').GoogleGenAI
+      googleAvailable = true
+    } catch (modErr) {
+      console.warn('Gemini SDK not available, will attempt OpenAI fallback if configured:', modErr.message)
+      googleAvailable = false
+    }
     if (event.httpMethod !== 'POST') {
       return { statusCode: 405, body: 'Method Not Allowed' }
     }
 
-    // Validate content-type
-    const contentType = event.headers['content-type'] || ''
-    if (!contentType.includes('application/json')) {
-      return { statusCode: 400, body: 'Invalid content type' }
-    }
-
     const body = JSON.parse(event.body || '{}')
-    const prompt = String(body.prompt || '')
-    const model = String(body.model || 'gemini-2.5-flash')
+    let prompt = body.prompt || ''
+    const model = body.model || 'gemini-2.5-flash'
 
-    if (!prompt || prompt.length < 5) {
-      return { statusCode: 400, body: 'Prompt is required' }
+    // Optional: include a server-side profile context if requested.
+    // The client must provide the correct PROFILE secret header to allow
+    // the server to include sensitive profile details. This prevents the
+    // profile from being included without authorization.
+    const includeProfile = !!body.includeProfile
+    const profileSecretHeader = (event.headers && (event.headers['x-profile-secret'] || event.headers['X-Profile-Secret'])) || ''
+
+    // Prefer a server-side Gemini key. If not present and OpenAI key exists,
+    // we'll use OpenAI as a fallback.
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || ''
+    const openaiKey = process.env.OPENAI_API_KEY || ''
+
+    let client = null
+    if (googleAvailable && geminiKey) {
+      client = new GoogleGenAI({ apiKey: geminiKey })
     }
 
-    // Hard payload limit (security)
-    if (prompt.length > 20000) {
-      return { statusCode: 413, body: 'Prompt too large' }
-    }
-
-    // ===== RATE LIMIT (per IP) =====
-    const ip =
-      (event.headers['x-nf-client-connection-ip'] ||
-        event.headers['x-forwarded-for'] ||
-        'unknown')
-        .split(',')[0]
-        .trim()
-
-    const store = getStore('ai-rate-limit')
-    const windowMs = 10 * 60 * 1000 // 10 minutes
-    const limit = 30               // 30 requests / window
-    const now = Date.now()
-    const key = `ip:${ip}`
-
-    let record = await store.get(key, { type: 'json' }).catch(() => null)
-    if (!record || typeof record !== 'object') {
-      record = { count: 0, start: now }
-    }
-
-    if (now - record.start > windowMs) {
-      record = { count: 0, start: now }
-    }
-
-    record.count += 1
-    await store.set(key, record, { ttl: 60 * 60 })
-
-    if (record.count > limit) {
-      return {
-        statusCode: 429,
-        body: 'Too many requests. Please try again later.'
+    // If requested and authorized, load the server-side profile and prepend
+    // it to the prompt so Gemini can answer using the user's details.
+    if (includeProfile && process.env.PROFILE_SECRET && profileSecretHeader === process.env.PROFILE_SECRET) {
+      const fs = require('fs')
+      const path = require('path')
+      const profilePath = path.join(__dirname, '..', 'data', 'profile.json')
+      try {
+        if (fs.existsSync(profilePath)) {
+          const raw = fs.readFileSync(profilePath, 'utf8')
+          const profile = JSON.parse(raw)
+          // Prepend profile as system instruction/context
+          prompt = `User profile information:\n${JSON.stringify(profile, null, 2)}\n\n` + prompt
+        }
+      } catch (pfErr) {
+        console.error('Failed to load profile:', pfErr)
       }
     }
 
-    // ===== GEMINI API =====
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY
-    if (!GEMINI_API_KEY) {
-      return {
-        statusCode: 500,
-        body: 'Server misconfigured: GEMINI_API_KEY missing'
-      }
-    }
+    let output = null
 
-    const endpoint =
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=` +
-      encodeURIComponent(GEMINI_API_KEY)
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: prompt }]
-          }
-        ],
+    if (client) {
+      // Use Gemini SDK
+      const response = await client.models.generateContent({
+        model,
+        contents: prompt,
         generationConfig: {
-          temperature: 0.5,
-          topP: 0.9,
-          maxOutputTokens: 900
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
         }
       })
-    })
+      output = response?.text || response?.output || JSON.stringify(response)
+    } else if (openaiKey) {
+      // Fallback to OpenAI Chat Completions API (gpt-3.5-turbo)
+      try {
+        const fetch = globalThis.fetch || require('node-fetch')
+        const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openaiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: 'You are a helpful assistant for Mann Mehta\'s portfolio site.' },
+              { role: 'user', content: prompt }
+            ],
+            max_tokens: 800,
+            temperature: 0.7
+          })
+        })
 
-    const data = await response.json().catch(() => ({}))
-
-    if (!response.ok) {
-      const msg = data?.error?.message || 'Gemini API error'
-      return { statusCode: 502, body: msg }
+        if (!openaiRes.ok) {
+          const errText = await openaiRes.text()
+          throw new Error(`OpenAI error: ${openaiRes.status} ${errText}`)
+        }
+        const openaiJson = await openaiRes.json()
+        output = openaiJson?.choices?.[0]?.message?.content || JSON.stringify(openaiJson)
+      } catch (openErr) {
+        console.error('OpenAI fallback failed:', openErr)
+        output = null
+      }
     }
 
-    const output =
-      data?.candidates?.[0]?.content?.parts
-        ?.map(p => p.text)
-        .filter(Boolean)
-        .join('') ||
-      "I couldn't generate a response."
+    if (!output) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "No AI provider configured (GEMINI or OPENAI). Set GEMINI_API_KEY or OPENAI_API_KEY in your host." })
+      }
+    }
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ output })
     }
   } catch (err) {
     console.error('Gemini proxy error:', err)
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message || 'Internal server error' })
+      body: JSON.stringify({ error: err.message || 'Unknown error' })
     }
   }
 }
