@@ -1,38 +1,14 @@
 exports.handler = async function (event, context) {
   try {
     let GoogleGenAI
+    let googleAvailable = false
     try {
-      // Attempt to require the server SDK. If it's not installed, we'll
-      // fall back to light-weight canned responses for public information
-      // such as the resume link instead of failing entirely.
+      // Attempt to require the Gemini SDK. If it's available we'll use it.
       GoogleGenAI = require('@google/genai').GoogleGenAI
+      googleAvailable = true
     } catch (modErr) {
-      console.error('Missing @google/genai module:', modErr)
-
-      // If the request asks about the resume, provide a public resume link
-      // from the environment or a default relative path.
-      try {
-        if (event.httpMethod === 'POST') {
-          const bodyText = event.body || '{}'
-          const parsed = JSON.parse(bodyText)
-          const promptText = (parsed.prompt || '').toLowerCase()
-          const resumeUrl = process.env.RESUME_URL || '/resume.pdf'
-
-          if (/resume|cv|curriculum vitae|download my resume/.test(promptText)) {
-            return {
-              statusCode: 200,
-              body: JSON.stringify({ output: `You can download the resume here: ${resumeUrl}` })
-            }
-          }
-        }
-      } catch (e) {
-        console.error('Fallback resume handler error:', e)
-      }
-
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: "Server error: '@google/genai' module not found. Run 'npm install @google/genai' and redeploy." })
-      }
+      console.warn('Gemini SDK not available, will attempt OpenAI fallback if configured:', modErr.message)
+      googleAvailable = false
     }
     if (event.httpMethod !== 'POST') {
       return { statusCode: 405, body: 'Method Not Allowed' }
@@ -49,17 +25,15 @@ exports.handler = async function (event, context) {
     const includeProfile = !!body.includeProfile
     const profileSecretHeader = (event.headers && (event.headers['x-profile-secret'] || event.headers['X-Profile-Secret'])) || ''
 
-    // Prefer a server-side key name. Avoid using VITE_ prefixed keys in production
-    // because those are exposed to the browser when Vite bundles the app.
-    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY
-    if (!apiKey) {
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: 'Gemini API key not configured on server. Set GEMINI_API_KEY in your host (e.g., Netlify) and redeploy.' })
-      }
-    }
+    // Prefer a server-side Gemini key. If not present and OpenAI key exists,
+    // we'll use OpenAI as a fallback.
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || ''
+    const openaiKey = process.env.OPENAI_API_KEY || ''
 
-    const client = new GoogleGenAI({ apiKey })
+    let client = null
+    if (googleAvailable && geminiKey) {
+      client = new GoogleGenAI({ apiKey: geminiKey })
+    }
 
     // If requested and authorized, load the server-side profile and prepend
     // it to the prompt so Gemini can answer using the user's details.
@@ -79,19 +53,71 @@ exports.handler = async function (event, context) {
       }
     }
 
-    const response = await client.models.generateContent({
-      model,
-      contents: prompt,
-      generationConfig: {
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 1024,
-      }
-    })
+    let output = null
 
-    // SDK returns structured output; prefer `.text` or suitable field
-    const output = response?.text || response?.output || JSON.stringify(response)
+    if (client) {
+      // Use Gemini SDK
+      const response = await client.models.generateContent({
+        model,
+        contents: prompt,
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 1024,
+        }
+      })
+      output = response?.text || response?.output || JSON.stringify(response)
+    } else if (openaiKey) {
+      // Fallback to OpenAI Chat Completions API (gpt-3.5-turbo)
+      try {
+        const fetch = globalThis.fetch || require('node-fetch')
+        const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${openaiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: 'You are a helpful assistant for Mann Mehta\'s portfolio site.' },
+              { role: 'user', content: prompt }
+            ],
+            max_tokens: 800,
+            temperature: 0.7
+          })
+        })
+
+        if (!openaiRes.ok) {
+          const errText = await openaiRes.text()
+          throw new Error(`OpenAI error: ${openaiRes.status} ${errText}`)
+        }
+        const openaiJson = await openaiRes.json()
+        output = openaiJson?.choices?.[0]?.message?.content || JSON.stringify(openaiJson)
+      } catch (openErr) {
+        console.error('OpenAI fallback failed:', openErr)
+        output = null
+      }
+    } else {
+      // No available provider; try resume fallback for resume queries
+      try {
+        const promptText = (prompt || '').toLowerCase()
+        const resumeUrl = process.env.RESUME_URL || '/resume.pdf'
+        if (/resume|cv|curriculum vitae|download my resume/.test(promptText)) {
+          output = `You can download the resume here: ${resumeUrl}`
+        }
+      } catch (e) {
+        console.error('Resume fallback error:', e)
+      }
+    }
+
+    if (!output) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "No AI provider configured (GEMINI or OPENAI). Set GEMINI_API_KEY or OPENAI_API_KEY in your host." })
+      }
+    }
 
     return {
       statusCode: 200,
