@@ -19,9 +19,14 @@ exports.handler = async function (event, context) {
     const prompt = body.prompt || ''
     const model = body.model || 'gemini-2.5-flash'
 
-    const apiKey = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY
+    // Prefer a server-side key name. Avoid using VITE_ prefixed keys in production
+    // because those are exposed to the browser when Vite bundles the app.
+    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY
     if (!apiKey) {
-      return { statusCode: 500, body: JSON.stringify({ error: 'Gemini API key not configured on server.' }) }
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'Gemini API key not configured on server. Set GEMINI_API_KEY in your host (e.g., Netlify) and redeploy.' })
+      }
     }
 
     const client = new GoogleGenAI({ apiKey })
