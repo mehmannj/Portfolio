@@ -1,7 +1,16 @@
-const { GoogleGenAI } = require('@google/genai')
-
 exports.handler = async function (event, context) {
   try {
+    let GoogleGenAI
+    try {
+      // Attempt to require the server SDK. If it's not installed, return a helpful error.
+      GoogleGenAI = require('@google/genai').GoogleGenAI
+    } catch (modErr) {
+      console.error('Missing @google/genai module:', modErr)
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Server error: '@google/genai' module not found. Run 'npm install @google/genai' and redeploy." })
+      }
+    }
     if (event.httpMethod !== 'POST') {
       return { statusCode: 405, body: 'Method Not Allowed' }
     }

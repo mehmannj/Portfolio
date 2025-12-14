@@ -32,5 +32,18 @@ export default defineConfig({
 
 - If you prefer the older `gh-pages` branch approach or a different CI, let me know and I can add that instead.
 - If your repo is private, Pages deployments are supported but may require additional configuration or a paid plan for custom domains.
+ 
+Functions & server dependencies (Netlify)
+- If you use Netlify functions (this project includes `netlify/functions/gemini-proxy.js`) the server-side code depends on the Node package `@google/genai`.
+- Ensure `@google/genai` is listed in `package.json` (it is included by default). Netlify installs dependencies during the build. If you get a function error mentioning the module is missing, run locally:
+
+```powershell
+npm install @google/genai
+git add package.json package-lock.json
+git commit -m "Add @google/genai dependency"
+git push
+```
+
+Then trigger a new Netlify deploy (push or redeploy from Netlify). Also ensure the `VITE_GEMINI_API_KEY` environment variable is set in the Netlify dashboard.
 
 If you want, I can push the workflow and test a build by running the dev server or creating a branch/push for you — tell me which GitHub repo URL to use and I can prepare the next steps.
