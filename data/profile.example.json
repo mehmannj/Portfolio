@@ -1,0 +1,17 @@
+{
+  "fullName": "Mann Mehta",
+  "email": "mehtamann16@gmail.com",
+  "location": "Brampton, ON, Canada",
+  "github": "https://github.com/mehmannj",
+  "linkedin": "https://www.linkedin.com/in/mann-mehta-17b819252",
+  "summary": "Full Stack Developer — sample profile file. Do not commit real secrets.",
+  "experience": [
+    {
+      "role": "Full-Stack Developer",
+      "company": "Example Co",
+      "from": "2024-01",
+      "to": "2025-12",
+      "details": ["Example project 1", "Example project 2"]
+    }
+  ]
+}

@@ -1,8 +1,9 @@
 # Quick Setup Guide for Gemini API
 
-## ✅ Your API Key is Already Configured!
+## ✅ Your API Key is NOT stored in the repo (recommended)
 
-Your `.env` file has been created with your Gemini API key.
+Your project expects a server-side Gemini API key to be configured in your host
+or a local `.env` for development. Do NOT commit keys to source control.
 
 ## 🔄 To Activate Gemini AI:
 
@@ -32,11 +33,13 @@ Try asking:
 
 1. **Check the .env file location**: Make sure `.env` is in the root directory (same folder as `package.json`)
 
-2. **Verify the content**: The `.env` file should contain:
+2. **Verify the content**: Your `.env` should contain a placeholder or local key for development only.
+   For production, set the server-side `GEMINI_API_KEY` in your hosting provider (Netlify or Actions).
+   Example (local only):
    ```
-   VITE_GEMINI_API_KEY=AIzaSyCqwoNIxOW-hKrpPR4UZ96w80pD-1V_Op8
+   # local development only - do NOT commit
+   VITE_GEMINI_API_KEY=your_local_test_key
    ```
-   (No spaces around the `=` sign!)
 
 3. **Hard refresh browser**: Press `Ctrl + Shift + R` or `Ctrl + F5`
 

@@ -36,11 +36,12 @@ If you still see "(Basic)" after restarting:
 
 1. **Check browser console** (F12 → Console tab) for errors
 2. **Verify .env file location**: Should be in root folder (same as package.json)
-3. **Check .env content**: Should be exactly:
+3. **Check `.env` content**: It should contain a local placeholder only (do NOT commit real keys):
    ```
-   VITE_GEMINI_API_KEY=AIzaSyCqwoNIxOW-hKrpPR4UZ96w80pD-1V_Op8
+   # local development only
+   VITE_GEMINI_API_KEY=your_local_test_key
    ```
-   (No quotes, no spaces)
+   For production, set `GEMINI_API_KEY` in your host's secret manager (Netlify/GitHub Actions).
 
 4. **Clear browser cache**: `Ctrl + Shift + Delete` → Clear cache
 

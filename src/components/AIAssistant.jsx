@@ -135,11 +135,10 @@ IMPORTANT INSTRUCTIONS:
   }, [isOpen])
 
   const GEMINI_MODEL = 'gemini-2.5-flash'
-  const hasKey = !!import.meta.env.VITE_GEMINI_API_KEY
 
+  // Always call the server-side proxy. The server determines whether a
+  // server-side key is available and will return a helpful error if not.
   const callGeminiAPI = async (userMessage) => {
-    if (!hasKey) throw new Error('Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your .env file.')
-
     try {
       const conversationText = messages
         .slice(-6)
@@ -181,11 +180,14 @@ IMPORTANT INSTRUCTIONS:
     try {
       let response
 
-      if (hasKey) {
-        // Use Gemini API
+      // Always attempt to use the server-side Gemini proxy. If the server
+      // does not have a configured key, the proxy will return an error and
+      // the fallback will be used instead.
+      try {
         response = await callGeminiAPI(userMessage)
-      } else {
-        // Fallback to simple responses if API key not configured
+      } catch (proxyErr) {
+        // Log and fall back to local canned responses
+        console.warn('Proxy failed, using fallback:', proxyErr.message)
         response = getFallbackResponse(userMessage)
       }
 
