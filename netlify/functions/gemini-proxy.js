@@ -99,18 +99,6 @@ exports.handler = async function (event, context) {
         console.error('OpenAI fallback failed:', openErr)
         output = null
       }
-    } else {
-      // No available provider; try resume fallback for resume queries
-      try {
-        const promptText = (prompt || '').toLowerCase()
-        // Serve the actual resume in /public
-        const resumeUrl = process.env.RESUME_URL || '/MannMehtaResume.pdf'
-        if (/resume|cv|curriculum vitae|download my resume/.test(promptText)) {
-          output = `You can download the resume here: ${resumeUrl}`
-        }
-      } catch (e) {
-        console.error('Resume fallback error:', e)
-      }
     }
 
     if (!output) {

@@ -94,7 +94,9 @@ When asked about projects or code, always include the GitHub link. Do not disclo
   const getFallbackResponse = (userInput) => {
     const lowerInput = userInput.toLowerCase()
 
-    if (lowerInput.includes('skill')) {
+    if (lowerInput.includes('resume')) {
+      return `You can download Mann's resume here: ${RESUME_URL}`
+    } else if (lowerInput.includes('skill')) {
       return "Mann is skilled in: Java, JavaScript, TypeScript, Python, C#, React, Angular, Spring Boot, MySQL, MongoDB, Git, Docker, AWS, and more! He's a full-stack developer with expertise in both frontend and backend technologies."
     } else if (lowerInput.includes('project')) {
       return "Mann has built several impressive projects:\n1. InstiManage - Smart Campus Management Platform (React + Spring Boot)\n2. CampusConnect - iOS Campus Map App\n3. Smart Campus Assistant - Android App\n4. C# Automation Tools\n5. Educational games and more!"
@@ -108,7 +110,7 @@ When asked about projects or code, always include the GitHub link. Do not disclo
       return greetings[Math.floor(Math.random() * greetings.length)]
     }
 
-    return `I can help you with information about Mann's skills, projects, experience, automation expertise, or contact details. You can download the resume here: ${RESUME_URL}`
+    return `Mann Mehta is a full-stack developer with 1+ year of experience across automation, React, Spring Boot, and mobile (iOS/Android). Ask me about skills, projects (InstiManage, CampusConnect, Smart Campus Assistant), experience, or contact info. Resume: ${RESUME_URL}`
   }
 
   const quickActions = [
