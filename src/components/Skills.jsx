@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { useInView } from 'framer-motion'
 import { useRef } from 'react'
 import './Skills.css'
+import { SiAmazonaws } from 'react-icons/si'
 
 const Skills = () => {
   const ref = useRef(null)
@@ -46,7 +47,7 @@ const Skills = () => {
       skills: [
         { name: 'Git', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg' },
         { name: 'Docker', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg' },
-        { name: 'AWS', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg' },
+        { name: 'AWS', icon: <SiAmazonaws /> },
         { name: 'Visual Studio', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visualstudio/visualstudio-plain.svg' },
         { name: 'Eclipse', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/eclipse/eclipse-original.svg' },
         { name: 'Android Studio', icon: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg' },
@@ -88,7 +89,11 @@ const Skills = () => {
                     transition={{ duration: 0.3, delay: (categoryIndex * 0.1) + (skillIndex * 0.05) }}
                     whileHover={{ scale: 1.1, y: -5 }}
                   >
-                    <img src={skill.icon} alt={skill.name} />
+                    {typeof skill.icon === 'string' ? (
+                      <img src={skill.icon} alt={skill.name} />
+                    ) : (
+                      <div className="icon-wrapper">{skill.icon}</div>
+                    )}
                     <span>{skill.name}</span>
                   </motion.div>
                 ))}
