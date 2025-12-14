@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaRobot, FaTimes, FaCode, FaLightbulb, FaRocket } from 'react-icons/fa'
-import { GEMINI_API_KEY, genAI, GEMINI_MODEL } from '../config/gemini'
+// Note: Gemini calls are performed server-side via a Netlify Function proxy.
+// This prevents bundling the Gemini SDK and exposing API keys in the browser.
 import './AIAssistant.css'
 
 const AIAssistant = () => {
@@ -133,56 +134,35 @@ IMPORTANT INSTRUCTIONS:
     }
   }, [isOpen])
 
+  const GEMINI_MODEL = 'gemini-2.5-flash'
+  const hasKey = !!import.meta.env.VITE_GEMINI_API_KEY
+
   const callGeminiAPI = async (userMessage) => {
-    if (!GEMINI_API_KEY || !genAI) {
-      throw new Error('Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your .env file.')
-    }
+    if (!hasKey) throw new Error('Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your .env file.')
 
     try {
-      // Create the prompt with conversation context and system instructions
       const conversationText = messages
-        .slice(-6) // Keep last 6 messages for context
+        .slice(-6)
         .map(msg => `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.text}`)
         .join('\n\n')
 
       const prompt = `${systemContext}\n\n${conversationText ? `${conversationText}\n\n` : ''}User: ${userMessage}\n\nAssistant:`
 
-      // Generate content using the SDK
-      const response = await genAI.models.generateContent({
-        model: GEMINI_MODEL,
-        contents: prompt,
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-        },
-        safetySettings: [
-          {
-            category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          },
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE'
-          }
-        ]
+      const res = await fetch('/.netlify/functions/gemini-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, model: GEMINI_MODEL })
       })
 
-      const aiResponse = response.text || 
-        "I apologize, but I couldn't generate a response. Please try again."
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(text || 'Gemini proxy error')
+      }
 
-      return aiResponse
+      const j = await res.json()
+      return j.output || j.text || "I couldn't generate a response."
     } catch (error) {
-      console.error('Gemini API Error:', error)
+      console.error('Gemini proxy error:', error)
       throw new Error(error.message || 'Failed to get response from Gemini API')
     }
   }
@@ -201,7 +181,7 @@ IMPORTANT INSTRUCTIONS:
     try {
       let response
 
-      if (GEMINI_API_KEY) {
+      if (hasKey) {
         // Use Gemini API
         response = await callGeminiAPI(userMessage)
       } else {
@@ -269,14 +249,14 @@ IMPORTANT INSTRUCTIONS:
             <div className="ai-header">
               <div className="ai-title">
                 <FaRobot />
-                <span>AI Assistant {GEMINI_API_KEY ? '(Gemini)' : '(Basic)'}</span>
+                <span>AI Assistant {hasKey ? '(Gemini)' : '(Basic)'}</span>
               </div>
               <button className="ai-close" onClick={() => setIsOpen(false)}>
                 <FaTimes />
               </button>
             </div>
 
-            {!GEMINI_API_KEY && (
+            {!hasKey && (
               <div className="ai-warning">
                 ⚠️ Gemini API key not configured. Using basic responses. Add VITE_GEMINI_API_KEY to .env file.
               </div>
