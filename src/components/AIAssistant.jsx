@@ -344,15 +344,10 @@ Resume: ${RESUME_URL}`
     }
   }
 
-des('hey')) {
-      return greetings[Math.floor(Math.random() * greetings.length)]
-    }
-
-    return `I can help you with information about Mann's skills, projects, experience, automation expertise, or contact details. You can download the resume here: ${RESUME_URL}`
-  }
-
->>>>>>> parent of 5e16fce (solve contact issue and ai minor errors)
-" },
+  const quickActions = [
+    { icon: <FaCode />, text: 'Skills', prompt: "What are Mann's skills and tech stack?" },
+    { icon: <FaRocket />, text: 'Projects', prompt: "Give a detailed overview of Mann's projects with tech used." },
+    { icon: <FaLightbulb />, text: 'Experience', prompt: "Summarize Mann's work experience and key achievements." },
     { icon: <FaRocket />, text: 'Why Hire', prompt: "Why should we hire Mann Mehta?" }
   ]
 
