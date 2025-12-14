@@ -12,10 +12,9 @@ dist
 dist-ssr
 *.local
 
-# Environment variables
-.env
-.env.local
-.env.production
+# Environment variables (tracked intentionally for deployment)
+# NOTE: Ensure you are comfortable committing any secrets before pushing.
+# If you want to keep secrets out of the repo, restore ignoring of .env files.
 
 # Editor directories and files
 .vscode/*
@@ -30,4 +29,3 @@ dist-ssr
  
 # Ignore local profile data with personal details
 data/profile.json
-
