@@ -22,14 +22,18 @@ const Contact = () => {
   const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE || 'template_fw3r6ip'
   const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'IQujbyKGZzEAZUJko'
 
-  // Initialize EmailJS
-  if (typeof emailjs.init === 'function' && PUBLIC_KEY) {
-    try {
-      emailjs.init(PUBLIC_KEY)
-    } catch (e) {
-      // ignore init errors during SSR or if already initialized
+  // Initialize EmailJS once on the client
+  useEffect(() => {
+    if (typeof window !== 'undefined' && typeof emailjs.init === 'function' && PUBLIC_KEY) {
+      try {
+        emailjs.init(PUBLIC_KEY)
+        // eslint-disable-next-line no-console
+        console.debug('EmailJS initialized')
+      } catch (e) {
+        console.warn('EmailJS init warning:', e)
+      }
     }
-  }
+  }, [])
 
   const handleChange = (e) => {
     setFormData({
@@ -45,13 +49,13 @@ const Contact = () => {
 
     try {
       // send using configured service/template/public key
+      // include `to_email` so templates that accept a recipient will deliver to the intended inbox
       await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
         from_name: formData.name,
         from_email: formData.email,
         message: formData.message,
         to_name: 'Mann Mehta',
-        // If your EmailJS template is configured to use a fixed recipient, they will receive this message.
-        // Alternatively, you can configure the template to accept `to_email` and set it here to `mannmehta003@gmail.com`.
+        to_email: 'mannmehta003@gmail.com',
         reply_to: formData.email
       })
 
