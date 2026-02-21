@@ -155,6 +155,13 @@ ${RESUME_URL}
     setIsTyping(true)
     setError(null)
 
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === '') {
+      setIsTyping(false)
+      setError('AI is temporarily unavailable.')
+      setMessages((prev) => [...prev, { type: 'bot', text: `You can ask me about Mann's skills, projects, experience, or resume.\nResume: ${RESUME_URL}` }])
+      return
+    }
+
     try {
       // human thinking delay
       await new Promise((r) => setTimeout(r, 400 + Math.random() * 300))

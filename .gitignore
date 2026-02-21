@@ -12,9 +12,10 @@ dist
 dist-ssr
 *.local
 
-# Environment variables (tracked intentionally for deployment)
-# NOTE: Ensure you are comfortable committing any secrets before pushing.
-# If you want to keep secrets out of the repo, restore ignoring of .env files.
+# Environment variables – do not commit secrets
+.env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
