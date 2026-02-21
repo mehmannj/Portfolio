@@ -117,13 +117,13 @@ ${RESUME_URL}
       contents: [
         {
           role: 'user',
-          parts: [
-            {
-              text: `${systemContext}\n\nUser question:\n${userMessage}`
-            }
-          ]
+          parts: [{ text: `${systemContext}\n\nUser question:\n${userMessage}` }]
         }
-      ]
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1024
+      }
     }
 
     const res = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
@@ -132,13 +132,17 @@ ${RESUME_URL}
       body: JSON.stringify(body)
     })
 
-    if (!res.ok) throw new Error('Gemini API error')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      const msg = data?.error?.message || `API error ${res.status}`
+      throw new Error(msg)
+    }
 
-    const data = await res.json()
-    return (
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Sorry, I couldn't generate a response."
-    )
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+    if (data.promptFeedback?.blockReason) {
+      throw new Error('Response was blocked by safety filters.')
+    }
+    return text || "Sorry, I couldn't generate a response."
   }
 
   /* ====================== SEND HANDLER ====================== */
@@ -167,8 +171,9 @@ ${RESUME_URL}
       await new Promise((r) => setTimeout(r, 400 + Math.random() * 300))
       const reply = await callGemini(userMessage)
       setMessages((prev) => [...prev, { type: 'bot', text: reply }])
-    } catch {
-      setError('AI is temporarily unavailable.')
+    } catch (err) {
+      const message = err?.message || 'AI is temporarily unavailable.'
+      setError(message)
       setMessages((prev) => [
         ...prev,
         {
