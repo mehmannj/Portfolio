@@ -8,6 +8,36 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 const GEMINI_MODEL = 'gemini-2.5-flash'
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 
+/* ====================== FALLBACK WHEN GEMINI UNAVAILABLE ====================== */
+function getFallbackReply (question, resumeUrl) {
+  const q = question.toLowerCase().trim()
+  if (/hire|why|recruit|choose|pick/.test(q)) {
+    return `Mann is a strong hire because he combines full-stack skills (React, Spring Boot, mobile) with real-world experience in automation and problem-solving. He's been a Software Developer at Llamachant Technologies and a Full-Stack Intern at Samskrita Bharati, with a 3.70 GPA from Sheridan College. He's practical, a fast learner, and communicates well with both technical and non-technical teams. You can see his full background in his resume: ${resumeUrl}`
+  }
+  if (/skill|tech|stack|language|framework|code/.test(q)) {
+    return `Mann's technical skills include:\n\n• Frontend: React, Angular, HTML, CSS, JavaScript, TypeScript\n• Backend: Spring Boot, Java, Python, C#\n• Mobile: Android (Kotlin, Jetpack Compose), iOS (Swift, MapKit)\n• Databases: MySQL, MongoDB, Oracle SQL, SQLite\n• Tools: Git, GitHub, Docker, AWS, REST APIs\n\nHis strength area is automation and real-world problem solving. Resume: ${resumeUrl}`
+  }
+  if (/project|build|app|work\s+on/.test(q)) {
+    return `Mann's main projects:\n\n• InstiManage (Capstone): React + Spring Boot campus management system\n• CampusConnect (iOS): Swift + MapKit + SQLite campus navigation app\n• Smart Campus Assistant (Android): Kotlin + Jetpack Compose (MVVM)\n• Automation tools in C# for installers, printing, and APIs\n\nMore details are on his portfolio and in his resume: ${resumeUrl}`
+  }
+  if (/experience|job|work|role|career/.test(q)) {
+    return `Mann's experience:\n\n• Software Developer – Llamachant Technologies (automation, PDF systems, APIs, email automation)\n• Full-Stack Developer Intern – Samskrita Bharati (React & Angular educational games, Bootstrap, MySQL, REST APIs)\n• Junior Enforcement Officer – Sheridan College (high-responsibility, 98% compliance)\n\nHe's currently open to work. Resume: ${resumeUrl}`
+  }
+  if (/resume|cv|pdf|download/.test(q)) {
+    return `You can view or download Mann's resume here: ${resumeUrl}`
+  }
+  if (/about|who|tell\s+me|know\s+more|intro|yourself/.test(q)) {
+    return `Mann Mehta is a Full Stack Developer based in Brampton, Ontario, open to work. He has a diploma in Computer Systems Technology (Software Development & Network Engineering) from Sheridan College (GPA 3.70), and experience in software development, full-stack internships, and automation. He's practical, a fast learner, and strong at problem-solving. Ask about his skills, projects, or why to hire him—or check his resume: ${resumeUrl}`
+  }
+  if (/contact|email|reach|connect/.test(q)) {
+    return `You can reach Mann at mannmehta003@gmail.com or through the Contact section on this portfolio. He's based in Brampton, ON and open to new opportunities.`
+  }
+  if (/education|college|degree|gpa|sheridan/.test(q)) {
+    return `Mann studied Computer Systems Technology – Software Development & Network Engineering at Sheridan College, with a GPA of 3.70.`
+  }
+  return `I'm not sure how to answer that right now. You can ask about Mann's skills, projects, experience, why to hire him, or his resume. Resume: ${resumeUrl}`
+}
+
 const AIAssistant = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([])
@@ -161,10 +191,15 @@ ${RESUME_URL}
     setIsTyping(true)
     setError(null)
 
+    const useFallback = (fallbackText) => {
+      setMessages((prev) => [...prev, { type: 'bot', text: fallbackText }])
+      setError(null)
+    }
+
     if (!GEMINI_API_KEY || GEMINI_API_KEY === '') {
+      await new Promise((r) => setTimeout(r, 300))
+      useFallback(getFallbackReply(userMessage, RESUME_URL))
       setIsTyping(false)
-      setError('AI is temporarily unavailable.')
-      setMessages((prev) => [...prev, { type: 'bot', text: `You can ask me about Mann's skills, projects, experience, or resume.\nResume: ${RESUME_URL}` }])
       return
     }
 
@@ -176,15 +211,8 @@ ${RESUME_URL}
     } catch (err) {
       const raw = err?.message || 'AI is temporarily unavailable.'
       const isQuota = raw === 'QUOTA_EXCEEDED' || /quota|rate limit|exceeded/i.test(raw)
-      const message = isQuota ? 'Usage limit reached for now. Try again later.' : raw
-      setError(message)
-      setMessages((prev) => [
-        ...prev,
-        {
-          type: 'bot',
-          text: `You can ask me about Mann’s skills, projects, experience, or resume.\nResume: ${RESUME_URL}`
-        }
-      ])
+      setError(isQuota ? 'Usage limit reached. Showing a quick answer below.' : raw)
+      useFallback(getFallbackReply(userMessage, RESUME_URL))
     } finally {
       setIsTyping(false)
     }

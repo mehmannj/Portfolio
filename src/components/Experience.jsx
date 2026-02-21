@@ -62,7 +62,7 @@ const Experience = () => {
       icon: <FaGraduationCap />,
       points: [
         'Software Development and Network Engineering',
-        'GPA: 3.70/4.0'
+        'GPA: 3.77/4.0'
       ]
     },
     {
