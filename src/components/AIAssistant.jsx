@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaRobot, FaTimes, FaCode, FaLightbulb, FaRocket } from 'react-icons/fa'
 import './AIAssistant.css'
 
+// Free Gemini API key from https://aistudio.google.com/apikey
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
-const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
+const GEMINI_MODEL = 'gemini-2.5-flash'
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 
 const AIAssistant = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -134,8 +135,9 @@ ${RESUME_URL}
 
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
-      const msg = data?.error?.message || `API error ${res.status}`
-      throw new Error(msg)
+      const raw = data?.error?.message || `API error ${res.status}`
+      const isQuota = /quota|rate limit|exceeded|429/i.test(raw)
+      throw new Error(isQuota ? 'QUOTA_EXCEEDED' : raw)
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text
@@ -172,7 +174,9 @@ ${RESUME_URL}
       const reply = await callGemini(userMessage)
       setMessages((prev) => [...prev, { type: 'bot', text: reply }])
     } catch (err) {
-      const message = err?.message || 'AI is temporarily unavailable.'
+      const raw = err?.message || 'AI is temporarily unavailable.'
+      const isQuota = raw === 'QUOTA_EXCEEDED' || /quota|rate limit|exceeded/i.test(raw)
+      const message = isQuota ? 'Usage limit reached for now. Try again later.' : raw
       setError(message)
       setMessages((prev) => [
         ...prev,
