@@ -56,7 +56,7 @@ const Hero = () => {
               transition={{ delay: 0.8 }}
             >
               <span className="pulse-dot"></span>
-              Open to Work
+              {/* Open to Work */}
             </motion.div>
           </motion.div>
 

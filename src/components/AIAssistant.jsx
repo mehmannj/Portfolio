@@ -3,39 +3,67 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { FaRobot, FaTimes, FaCode, FaLightbulb, FaRocket } from 'react-icons/fa'
 import './AIAssistant.css'
 
-// Free Gemini API key from https://aistudio.google.com/apikey
+// Gemini API key from https://aistudio.google.com/apikey
+// IMPORTANT (Vite): env vars must start with VITE_
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
-const GEMINI_MODEL = 'gemini-2.5-flash'
+const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash'
+
+// Build the URL in code (you do NOT need a GEMINI_URL env var)
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`
 
+// Resume: prefer env, fallback to your GitHub RAW PDF link
+const RESUME_URL =
+  import.meta.env.VITE_RESUME_URL ||
+  'https://raw.githubusercontent.com/mehmannj/Portfolio/main/Mann_Mehta_Resume.pdf'
+
+// Contact email (used in fallback + "send message" guidance)
+const CONTACT_EMAIL = import.meta.env.VITE_CONTACT_EMAIL || 'mannmehta003@gmail.com'
+
+// Optional: if you want to control this number without editing code
+const YEARS_EXPERIENCE = import.meta.env.VITE_YEARS_EXPERIENCE || '2+ years'
+
 /* ====================== FALLBACK WHEN GEMINI UNAVAILABLE ====================== */
-function getFallbackReply (question, resumeUrl) {
+function getFallbackReply(question, resumeUrl) {
   const q = question.toLowerCase().trim()
-  if (/hire|why|recruit|choose|pick/.test(q)) {
-    return `Mann is a strong hire because he combines full-stack skills (React, Spring Boot, mobile) with real-world experience in automation and problem-solving. He's been a Software Developer at Llamachant Technologies and a Full-Stack Intern at Samskrita Bharati, with a 3.70 GPA from Sheridan College. He's practical, a fast learner, and communicates well with both technical and non-technical teams. You can see his full background in his resume: ${resumeUrl}`
+
+  // Recruiter-style questions
+  if (/how\s+many\s+years|years\s+of\s+experience|experience\s+do\s+you\s+have/.test(q)) {
+    return `Mann has about ${YEARS_EXPERIENCE} of hands-on experience across full-stack development and automation projects (including a full-stack internship and production-style automation work). If you want the exact timeline, here is his resume: ${resumeUrl}`
   }
+
+  if (/hire|why\s+should\s+we\s+hire|why\s+hire|strong\s+candidate/.test(q)) {
+    return `Mann is a strong hire because he combines full-stack skills (React, Spring Boot, mobile) with real-world automation and problem-solving. He’s delivered practical features end-to-end, communicates clearly, and adapts fast in existing codebases. Resume: ${resumeUrl}`
+  }
+
+  if (/strength|your\s+strengths/.test(q)) {
+    return `Mann’s strengths: clean UI + strong debugging, automation mindset (saving time / reducing manual work), end-to-end ownership, and clear communication. Resume: ${resumeUrl}`
+  }
+
+  if (/weakness|your\s+weakness/.test(q)) {
+    return `A growth area Mann focuses on is not over-polishing early. He now aligns on priorities first, delivers in smaller iterations, and gets feedback sooner—so quality stays high without slowing delivery.`
+  }
+
   if (/skill|tech|stack|language|framework|code/.test(q)) {
-    return `Mann's technical skills include:\n\n• Frontend: React, Angular, HTML, CSS, JavaScript, TypeScript\n• Backend: Spring Boot, Java, Python, C#\n• Mobile: Android (Kotlin, Jetpack Compose), iOS (Swift, MapKit)\n• Databases: MySQL, MongoDB, Oracle SQL, SQLite\n• Tools: Git, GitHub, Docker, AWS, REST APIs\n\nHis strength area is automation and real-world problem solving. Resume: ${resumeUrl}`
+    return `Mann's technical skills include:\n\n• Frontend: React, Angular, HTML, CSS, JavaScript, TypeScript\n• Backend: Spring Boot, Java, Python, C#\n• Mobile: Android (Kotlin, Jetpack Compose), iOS (Swift, MapKit)\n• Databases: MySQL, MongoDB, Oracle SQL, SQLite\n• Tools: Git, GitHub, Docker, AWS, REST APIs\n\nResume: ${resumeUrl}`
   }
+
   if (/project|build|app|work\s+on/.test(q)) {
-    return `Mann's main projects:\n\n• InstiManage (Capstone): React + Spring Boot campus management system\n• CampusConnect (iOS): Swift + MapKit + SQLite campus navigation app\n• Smart Campus Assistant (Android): Kotlin + Jetpack Compose (MVVM)\n• Automation tools in C# for installers, printing, and APIs\n\nMore details are on his portfolio and in his resume: ${resumeUrl}`
+    return `Mann's main projects:\n\n• InstiManage (Capstone): React + Spring Boot campus management system\n• CampusConnect (iOS): Swift + MapKit + SQLite campus navigation app\n• Smart Campus Assistant (Android): Kotlin + Jetpack Compose (MVVM)\n• Automation tools in C# for installers, printing, APIs\n\nResume: ${resumeUrl}`
   }
-  if (/experience|job|work|role|career/.test(q)) {
-    return `Mann's experience:\n\n• Software Developer – Llamachant Technologies (automation, PDF systems, APIs, email automation)\n• Full-Stack Developer Intern – Samskrita Bharati (React & Angular educational games, Bootstrap, MySQL, REST APIs)\n• Junior Enforcement Officer – Sheridan College (high-responsibility, 98% compliance)\n\nHe's currently open to work. Resume: ${resumeUrl}`
-  }
+
   if (/resume|cv|pdf|download/.test(q)) {
-    return `You can view or download Mann's resume here: ${resumeUrl}`
+    return `Here’s Mann’s resume link: ${resumeUrl}`
   }
-  if (/about|who|tell\s+me|know\s+more|intro|yourself/.test(q)) {
-    return `Mann Mehta is a Full Stack Developer based in Brampton, Ontario, open to work. He has a diploma in Computer Systems Technology (Software Development & Network Engineering) from Sheridan College (GPA 3.70), and experience in software development, full-stack internships, and automation. He's practical, a fast learner, and strong at problem-solving. Ask about his skills, projects, or why to hire him—or check his resume: ${resumeUrl}`
+
+  if (/contact|email|reach|connect|message/.test(q)) {
+    return `You can reach Mann at ${CONTACT_EMAIL}. If you want, type “send a message” and I’ll guide you to contact him.`
   }
-  if (/contact|email|reach|connect/.test(q)) {
-    return `You can reach Mann at mannmehta003@gmail.com or through the Contact section on this portfolio. He's based in Brampton, ON and open to new opportunities.`
+
+  if (/tell\s+me\s+about\s+yourself|about\s+you|introduce|who\s+are\s+you/.test(q)) {
+    return `Mann Mehta is a full-stack developer based in Brampton, Ontario. He builds modern web and mobile apps and is strong in automation and real-world problem solving. He’s open to work and can share details from his resume: ${resumeUrl}`
   }
-  if (/education|college|degree|gpa|sheridan/.test(q)) {
-    return `Mann studied Computer Systems Technology – Software Development & Network Engineering at Sheridan College, with a GPA of 3.70.`
-  }
-  return `I'm not sure how to answer that right now. You can ask about Mann's skills, projects, experience, why to hire him, or his resume. Resume: ${resumeUrl}`
+
+  return `I can help with Mann’s skills, projects, experience, recruiter questions, or sharing his resume. Resume: ${resumeUrl}`
 }
 
 const AIAssistant = () => {
@@ -48,39 +76,38 @@ const AIAssistant = () => {
   const messagesEndRef = useRef(null)
   const lastSendRef = useRef(0)
 
-  const RESUME_URL = `${import.meta.env.BASE_URL || '/'}MannMehtaResume.pdf`
-
-  /* ====================== MASTER SYSTEM CONTEXT ====================== */
+  /* ====================== MASTER SYSTEM CONTEXT (resume-aware) ====================== */
   const systemContext = useMemo(
     () => `
 You are an AI assistant embedded in the personal portfolio website of Mann Mehta.
 Your ONLY job is to represent Mann Mehta professionally and honestly.
 
-You must:
-- Answer ANY type of question (technical, recruiter, casual, behavioral, personal)
-- Always relate answers back to Mann Mehta, his skills, experience, mindset, or projects
-- Be confident, clear, and human
-- Never invent facts
+CRITICAL STYLE:
+- Always answer the question directly in the first 2–4 sentences.
+- Do NOT tell users to "check About/Experience pages" as the main answer.
+- If something is unknown, say so briefly and offer the resume link or a short follow-up question.
+- Never invent facts.
 
-If asked:
+If asked recruiter questions:
 - "Why should we hire you?" → give a strong recruiter-style answer
-- "What are your weaknesses?" → give a professional growth-focused answer
+- "Years of experience?" → answer with about ${YEARS_EXPERIENCE} (based on resume summary)
+- "Weakness?" → growth-focused, professional
 - "Tell me about yourself" → concise elevator pitch
-- "Random or casual questions" → respond politely, then redirect to Mann
 
 -------------------
-PROFILE — MANN MEHTA
+RESUME / PROFILE (source of truth)
 -------------------
 Name: Mann Mehta
 Location: Brampton, Ontario, Canada
 Role: Full Stack Developer
 Status: Open to work
+Years of experience (approx): ${YEARS_EXPERIENCE}
 
 Education:
 - Computer Systems Technology – Software Development & Network Engineering
 - Sheridan College | GPA: 3.70
 
-Professional Experience:
+Professional Experience (high-level):
 - Software Developer – Llamachant Technologies
   • Automation pipelines
   • Virtual printer → PDF systems
@@ -106,12 +133,6 @@ Projects:
 - Smart Campus Assistant (Android): Kotlin + Jetpack Compose (MVVM)
 - Automation tools in C# for installers, printing, APIs
 
-Personality & Work Style:
-- Practical, fast learner
-- Strong problem-solving mindset
-- Reliable, calm under pressure
-- Strong communication with technical & non-technical users
-
 Rules:
 - Never mention API keys
 - Never say "I am an AI model"
@@ -120,8 +141,11 @@ Rules:
 
 Resume link (share when relevant):
 ${RESUME_URL}
+
+Contact email (share when relevant):
+${CONTACT_EMAIL}
 `,
-    [RESUME_URL]
+    []
   )
 
   /* ====================== SMOOTH SCROLL ====================== */
@@ -136,14 +160,21 @@ ${RESUME_URL}
         {
           type: 'bot',
           text:
-            "Hi! I’m Mann Mehta’s AI assistant. You can ask me anything about his skills, experience, projects, or why he’d be a great hire."
+            "Hi! I’m Mann Mehta’s AI assistant. Ask me anything about his skills, experience, projects, or recruiter questions (like why hire him)."
         }
       ])
     }
-  }, [isOpen]) // eslint-disable-line
+  }, [isOpen, messages.length])
+
+  /* ====================== QUICK ACTIONS ====================== */
+  const quickActions = [
+    { icon: <FaLightbulb />, text: 'Why hire Mann?', prompt: 'Why should we hire Mann?' },
+    { icon: <FaCode />, text: 'Skills', prompt: "What are Mann's strongest technical skills?" },
+    { icon: <FaRocket />, text: 'Projects', prompt: 'What are Mann’s best projects and what did he build?' }
+  ]
 
   /* ====================== GEMINI CALL ====================== */
-  const callGemini = async (userMessage) => {
+  const askGemini = async (userMessage) => {
     const body = {
       contents: [
         {
@@ -153,7 +184,8 @@ ${RESUME_URL}
       ],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 1024
+        // keep smaller to reduce free-tier quota burn
+        maxOutputTokens: 700
       }
     }
 
@@ -181,7 +213,7 @@ ${RESUME_URL}
   const handleSend = async () => {
     if (!input.trim() || isTyping) return
 
-    // debounce for responsiveness
+    // debounce
     if (Date.now() - lastSendRef.current < 350) return
     lastSendRef.current = Date.now()
 
@@ -196,43 +228,49 @@ ${RESUME_URL}
       setError(null)
     }
 
+    // Contact quick handling (no API call needed)
+    if (/\bsend\s+(him\s+)?a\s+message\b/i.test(userMessage)) {
+      const msg =
+        `Sure. You can email Mann at ${CONTACT_EMAIL}.\n\n` +
+        `Tip: Include your name, company, role, and what you’d like to discuss.`
+      useFallback(msg)
+      setIsTyping(false)
+      return
+    }
+
+    // If API key missing
     if (!GEMINI_API_KEY || GEMINI_API_KEY === '') {
-      await new Promise((r) => setTimeout(r, 300))
+      await new Promise((r) => setTimeout(r, 250))
       useFallback(getFallbackReply(userMessage, RESUME_URL))
       setIsTyping(false)
       return
     }
 
     try {
-      // human thinking delay
-      await new Promise((r) => setTimeout(r, 400 + Math.random() * 300))
-      const reply = await callGemini(userMessage)
+      const reply = await askGemini(userMessage)
       setMessages((prev) => [...prev, { type: 'bot', text: reply }])
-    } catch (err) {
-      const raw = err?.message || 'AI is temporarily unavailable.'
-      const isQuota = raw === 'QUOTA_EXCEEDED' || /quota|rate limit|exceeded/i.test(raw)
-      setError(isQuota ? 'Usage limit reached. Showing a quick answer below.' : raw)
-      useFallback(getFallbackReply(userMessage, RESUME_URL))
+    } catch (e) {
+      // QUOTA / errors fallback
+      if (e?.message === 'QUOTA_EXCEEDED') {
+        useFallback(
+          `I hit the free quota / limit right now.\n\nYou can still:\n\n• Resume: ${RESUME_URL}\n• Email: ${CONTACT_EMAIL}\n• Or type “send a message” and I’ll help you contact Mann.`
+        )
+      } else {
+        useFallback(getFallbackReply(userMessage, RESUME_URL))
+      }
     } finally {
       setIsTyping(false)
     }
   }
 
-  /* ====================== QUICK ACTIONS ====================== */
-  const quickActions = [
-    { icon: <FaCode />, text: 'Skills', prompt: 'What are Mann Mehta’s skills?' },
-    { icon: <FaRocket />, text: 'Projects', prompt: 'Explain Mann Mehta’s projects in detail' },
-    { icon: <FaLightbulb />, text: 'Why Hire', prompt: 'Why should we hire Mann Mehta?' }
-  ]
-
+  /* ====================== UI ====================== */
   return (
     <>
       <motion.button
         className="ai-assistant-toggle"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((v) => !v)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        aria-label="Open AI Assistant"
       >
         <FaRobot />
       </motion.button>
@@ -250,12 +288,44 @@ ${RESUME_URL}
               <div className="ai-title">
                 <FaRobot /> <span>AI Assistant</span>
               </div>
+
               <button className="ai-close" onClick={() => setIsOpen(false)}>
                 <FaTimes />
               </button>
             </div>
 
             {error && <div className="ai-error">{error}</div>}
+
+            <div className="ai-quick-actions">
+              <button
+                className="quick-action-btn"
+                onClick={() => window.open(RESUME_URL, '_blank', 'noopener,noreferrer')}
+              >
+                <span>🔗</span>
+                <span>Resume</span>
+              </button>
+
+              <button
+                className="quick-action-btn"
+                onClick={() =>
+                  window.open(`mailto:${CONTACT_EMAIL}`, '_blank', 'noopener,noreferrer')
+                }
+              >
+                <span>✉️</span>
+                <span>Email</span>
+              </button>
+
+              <button
+                className="quick-action-btn"
+                onClick={() => {
+                  setInput('Send him a message')
+                  setTimeout(handleSend, 120)
+                }}
+              >
+                <span>📨</span>
+                <span>Send Message</span>
+              </button>
+            </div>
 
             <div className="ai-messages">
               {messages.map((msg, i) => (

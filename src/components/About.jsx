@@ -48,7 +48,7 @@ const About = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <div className="stat-card">
-              <div className="stat-number">1+</div>
+              <div className="stat-number">2+</div>
               <div className="stat-label">Years Experience</div>
             </div>
             <div className="stat-card">
